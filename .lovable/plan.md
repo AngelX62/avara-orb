@@ -1,51 +1,35 @@
-# Avara Orb — Animated AI Assistant Visual
+# Avara Orb — Ivory & Champagne Refinement
 
-A single, premium animated orb representing **Avara**, the AI command assistant inside Avitus. The orb lives on the index page on a clean dark canvas, centered, with subtle "Avara" wordmark below. No surrounding UI — just the orb as a hero piece.
+Keep the layered SVG architecture (turbulence morph, drifting pools, breathing scale, halo, rim) but re-skin the orb around a warm ivory + champagne palette. Replace the indigo/violet system entirely.
 
-## Visual Concept
+## Palette mapping
 
-A glassy, liquid-metal sphere that feels alive and intelligent — like it's quietly thinking. Inspired by Apple's Siri orb and the Humane Ai pin's bloom, but with its own identity: deeper, calmer, more "command center" than "voice assistant."
+- Core fill: ivory `#FFF7EA` → soft beige `#F6E6CC` → warm sand `#E6CFA4` → deep bronze `#9C7C46` → near-black `#3A2A14` (radial)
+- Rim: thin champagne stroke `#D8B76A` with a brighter `#F1DCA0` micro-highlight at ~96%
+- Highlight: blush `#F4A7B9` at ~40% opacity, top-left
+- Thinking pool A: lavender `#C9A7FF` ~45% opacity, drifting bottom-right
+- Thinking pool B: teal `#78D6C6` ~35% opacity, drifting bottom-left
+- Specular sheen: warm ivory (not pure white), low opacity
+- Page background: `#15120F` with a soft warm vignette
 
-**Palette (deep, premium, calm):**
-- Background: near-black with a faint radial vignette (#08090C → #000)
-- Orb core gradient: indigo → violet → soft cyan rim (#5B6CFF, #8A5BFF, #6FE3FF accents)
-- Highlight: warm white bloom
-- Wordmark: off-white, low-opacity, ultralight tracking-wide
+## Visual additions
 
-## Motion System (smooth, flowy, premium, unique)
+- **Thin champagne rim**: a 0.6px stroke `#D8B76A` at the sphere edge plus a soft outer rim gradient — clearly architectural, not glow-heavy.
+- **Glass facets**: 2–3 very faint curved highlight arcs (ivory + champagne, ≤0.6 stroke, ~20% opacity) inside the sphere to suggest faceted glass without being literal.
+- **Inner depth**: a bottom-right radial shadow tint to give the orb weight.
+- **Grain texture**: an `feTurbulence` noise layer at ~18% opacity, color-matrixed warm, to give a tactile glass surface.
 
-Multiple layers compose the orb. Each moves on its own slow curve — they never sync, which gives it organic life.
+## Motion
 
-1. **Inner liquid core** — animated SVG/Canvas blob with metaball-style noise, slowly morphing (8–12s loop). Gradient shifts hue subtly as it breathes.
-2. **Breathing scale** — whole orb gently scales 1.00 → 1.04 → 1.00 on a slow sine (~5s), like inhale/exhale.
-3. **Soft rotation** — the inner gradient rotates very slowly (~30s/full turn), so highlights drift around the surface.
-4. **Specular highlight** — a soft white bloom that orbits off-center, catching the orb like light on glass.
-5. **Outer halo / aura** — a blurred glow ring that pulses in counter-rhythm to the breath, expanding outward.
-6. **Particle wisps** — 4–6 faint dots drifting in slow arcs around the orb, fading in/out, suggesting "thinking" without being literal.
-7. **Idle → Listening micro-state (optional toggle)** — when hovered, the orb intensifies: highlight brightens, halo expands, inner morph speeds up subtly. Smooth ease, no snap.
+- **Idle (default)**: slow breath (1.00 → 1.035, 6s ease-in-out), soft warm aura pulse (7.5s), champagne rim static.
+- **Thinking**: lavender + teal pools drift on independent 11s / 13s ease curves, blush highlight orbits subtly, specular sheen drifts, a faint lavender→teal shimmer halo rotates slowly (~24s) outside the orb at low opacity. This is the default ambient state — calm enough to read as idle, just enough motion to read as alive.
+- Internal core gradient still rotates very slowly (~38s) under the morph filter so light catches differently over time.
+- Wisps removed — they read too "magical." Replaced by the shimmer halo, which is more architectural.
 
-All motion uses long durations (4–30s), soft easings (cubic-bezier ease-in-out), and layered phase offsets so it never feels looped.
+## Files
 
-## Layout
+- `src/components/AvaraOrb.tsx` — rewrite SVG defs (gradients, filters), restructure layers (core → pools → blush → facets → sheen → depth → grain → rim).
+- `src/styles.css` — update Avara CSS block: new aura color (warm amber, not violet), add `.avara-shimmer` rotating halo, add `.avara-pool-a/b` and `.avara-blush-orbit` keyframes, retune `.avara-stage` background to `#15120F` warm vignette, retint wordmark to ivory.
+- `src/routes/index.tsx` — no structural change.
 
-```
-            ┌─────────────────────────┐
-            │                         │
-            │                         │
-            │          ◉              │   ← orb, centered, ~320px
-            │                         │
-            │        Avara            │   ← wordmark, small caps
-            │                         │
-            └─────────────────────────┘
-```
-
-Full-viewport dark background, orb vertically centered, wordmark 40px below.
-
-## Technical Notes
-
-- Single component `src/components/AvaraOrb.tsx`, rendered from `src/routes/index.tsx`.
-- Implemented with layered divs + SVG filters (Gaussian blur, displacement map for liquid feel) + CSS keyframe animations (ok here — this is a UI page, not a Remotion video).
-- Use `feTurbulence` + `feDisplacementMap` for the morphing inner liquid; animate the turbulence `baseFrequency` and a `<animateTransform>` for slow drift.
-- Performance: GPU-friendly transforms only (translate, scale, opacity, filter). No layout thrash.
-- Respects `prefers-reduced-motion` — falls back to a static orb with a very gentle breath.
-- Replaces the placeholder index content.
+Result: a calm, architectural ivory sphere with a thin gold rim, soft blush light, and the lavender/teal "thinking" colors living *inside* the glass rather than on top of it.
