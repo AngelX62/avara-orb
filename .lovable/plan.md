@@ -1,35 +1,50 @@
-# Avara Orb — Ivory & Champagne Refinement
+# Avara Orb — Living Rim & Surface
 
-Keep the layered SVG architecture (turbulence morph, drifting pools, breathing scale, halo, rim) but re-skin the orb around a warm ivory + champagne palette. Replace the indigo/violet system entirely.
+The orb currently reads as static: the rim is a flat champagne stroke and the inside drifts like a lava lamp. The fix is to keep the orb anchored in place (no translation drift) and instead make the **surface and rim themselves feel alive** — light traveling around the edge, energy threading through the glass, and a rim that breathes with the core.
 
-## Palette mapping
+## What changes
 
-- Core fill: ivory `#FFF7EA` → soft beige `#F6E6CC` → warm sand `#E6CFA4` → deep bronze `#9C7C46` → near-black `#3A2A14` (radial)
-- Rim: thin champagne stroke `#D8B76A` with a brighter `#F1DCA0` micro-highlight at ~96%
-- Highlight: blush `#F4A7B9` at ~40% opacity, top-left
-- Thinking pool A: lavender `#C9A7FF` ~45% opacity, drifting bottom-right
-- Thinking pool B: teal `#78D6C6` ~35% opacity, drifting bottom-left
-- Specular sheen: warm ivory (not pure white), low opacity
-- Page background: `#15120F` with a soft warm vignette
+### 1. Living champagne rim (the headline change)
+Replace the single flat stroke with a layered, animated rim:
 
-## Visual additions
+- **Traveling light arc**: a bright champagne highlight (`#F1DCA0` → transparent) that sweeps slowly around the circumference (~14s loop), like light catching the edge of a polished bezel. Implemented as a rotating conic-gradient ring masked to a thin band.
+- **Counter-rotating shadow arc**: a darker bronze (`#7A5A28`) arc rotating the opposite direction at a different speed (~22s) so the rim never looks like a single spinning highlight — it reads as a faceted metal ring with shifting reflections.
+- **Twin hairline strokes**: two concentric SVG circles (0.4px champagne + 0.3px inner ivory at ~96% radius) for an architectural double-bezel.
+- **Rim micro-pulse**: rim opacity breathes 0.55 → 0.85 in sync with the core breath (6s) so the gold "inhales" with the orb instead of sitting flat.
+- **Tick accents**: 4 nearly invisible champagne tick marks at 12/3/6/9 (≤0.4 opacity) that brighten momentarily as the traveling highlight passes — gives the rim a sense of structure, like a watch bezel.
 
-- **Thin champagne rim**: a 0.6px stroke `#D8B76A` at the sphere edge plus a soft outer rim gradient — clearly architectural, not glow-heavy.
-- **Glass facets**: 2–3 very faint curved highlight arcs (ivory + champagne, ≤0.6 stroke, ~20% opacity) inside the sphere to suggest faceted glass without being literal.
-- **Inner depth**: a bottom-right radial shadow tint to give the orb weight.
-- **Grain texture**: an `feTurbulence` noise layer at ~18% opacity, color-matrixed warm, to give a tactile glass surface.
+### 2. Inner energy threads (replaces the lava-lamp drift)
+Remove the `translate()` drift on the lavender/teal pools. Replace with motion that lives *on the surface*:
 
-## Motion
+- **Caustic threads**: 2–3 thin curved SVG paths inside the orb (lavender + teal, ~0.4 stroke, low opacity) that animate their `stroke-dashoffset` to look like light refracting through liquid glass — slow, continuous, never-repeating feel.
+- **Pulse rings**: every ~7s a faint champagne ring expands from the core to the rim and fades — the orb's "heartbeat," very subtle.
+- **Sheen sweep**: the existing top-left specular highlight gets a slow diagonal sweep (oblique gradient translating across the sphere on a 9s loop), like light moving across glass as you tilt it.
 
-- **Idle (default)**: slow breath (1.00 → 1.035, 6s ease-in-out), soft warm aura pulse (7.5s), champagne rim static.
-- **Thinking**: lavender + teal pools drift on independent 11s / 13s ease curves, blush highlight orbits subtly, specular sheen drifts, a faint lavender→teal shimmer halo rotates slowly (~24s) outside the orb at low opacity. This is the default ambient state — calm enough to read as idle, just enough motion to read as alive.
-- Internal core gradient still rotates very slowly (~38s) under the morph filter so light catches differently over time.
-- Wisps removed — they read too "magical." Replaced by the shimmer halo, which is more architectural.
+### 3. Core stays anchored
+The core no longer translates. It only:
+- Breathes (scale 1 → 1.035, 6s).
+- Rotates internally under the liquid filter (42s) so the warm gradient slowly redistributes.
+- Carries the lavender/teal as in-place hue shifts (opacity + scale only, no translate), so the "thinking" colors feel like they're glowing *through* the glass rather than floating around inside it.
+
+### 4. Halo restraint
+The outer conic shimmer halo gets dialed down (opacity 0.85 → 0.5, blur up) so the rim becomes the focal point instead of competing with it.
 
 ## Files
 
-- `src/components/AvaraOrb.tsx` — rewrite SVG defs (gradients, filters), restructure layers (core → pools → blush → facets → sheen → depth → grain → rim).
-- `src/styles.css` — update Avara CSS block: new aura color (warm amber, not violet), add `.avara-shimmer` rotating halo, add `.avara-pool-a/b` and `.avara-blush-orbit` keyframes, retune `.avara-stage` background to `#15120F` warm vignette, retint wordmark to ivory.
-- `src/routes/index.tsx` — no structural change.
+- `src/components/AvaraOrb.tsx`
+  - Add new SVG defs: `avara-rim-arc` (conic gradient via foreignObject or layered `<circle>` with `pathLength` + `stroke-dasharray`), `avara-thread-*` paths, `avara-pulse` ring.
+  - Restructure rim layer into: outer hairline + inner hairline + traveling highlight arc + counter arc + tick marks.
+  - Remove translate-based pool drift; switch to opacity/scale-in-place animation classes.
+  - Add caustic thread paths and pulse ring inside the clip group.
 
-Result: a calm, architectural ivory sphere with a thin gold rim, soft blush light, and the lavender/teal "thinking" colors living *inside* the glass rather than on top of it.
+- `src/styles.css`
+  - New keyframes: `avara-rim-travel` (rotate 360° / 14s linear), `avara-rim-counter` (rotate -360° / 22s linear), `avara-rim-pulse` (opacity 0.55↔0.85 / 6s sync with breath), `avara-thread` (stroke-dashoffset loop, 12s/16s offset), `avara-pulse-ring` (scale 0.4→1 + opacity 0.5→0 / 7s), `avara-sheen-sweep` (translate -15%↔15% / 9s).
+  - Remove `translate()` from `.avara-pool-a`, `.avara-pool-b`, `.avara-blush-orbit`; replace with `opacity` + `scale` only.
+  - Tone down `.avara-shimmer` (opacity 0.5, blur 28px).
+  - Add reduced-motion entries for the new classes.
+
+- `src/routes/index.tsx` — no change.
+
+## Result
+
+A still, anchored orb whose **rim is the most alive part**: a champagne bezel where light travels, ticks catch, and the gold breathes with the core. Inside, light threads through the glass and a soft heartbeat pulses outward — calm, architectural, unmistakably Avara, no floating.
