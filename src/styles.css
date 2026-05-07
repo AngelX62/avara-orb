@@ -143,14 +143,14 @@
   }
 }
 
-/* ───── Avara orb ───── */
+/* ───── Avara orb (translucent bubble on light surface) ───── */
 
 .avara-stage {
   position: relative;
   min-height: 100vh;
   width: 100%;
   background:
-    radial-gradient(ellipse at 50% 38%, #221b13 0%, #15120F 55%, #08060a 100%);
+    radial-gradient(ellipse at 50% 40%, #FBF7F1 0%, #F2EBE0 60%, #E8DFD0 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -163,7 +163,7 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 50%, transparent 0%, transparent 55%, rgba(0,0,0,0.7) 100%);
+    radial-gradient(circle at 50% 55%, transparent 0%, transparent 60%, rgba(120, 90, 50, 0.08) 100%);
 }
 
 .avara-center {
@@ -171,7 +171,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 56px;
+  gap: 64px;
 }
 
 .avara-wordmark {
@@ -179,20 +179,20 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: rgba(255, 247, 234, 0.85);
+  color: rgba(60, 40, 20, 0.78);
 }
 .avara-wordmark span {
   font-size: 14px;
   letter-spacing: 0.55em;
-  font-weight: 200;
+  font-weight: 300;
   text-indent: 0.55em;
 }
 .avara-wordmark small {
   font-size: 10px;
   letter-spacing: 0.35em;
   text-transform: uppercase;
-  color: rgba(216, 183, 106, 0.55);
-  font-weight: 300;
+  color: rgba(180, 130, 70, 0.7);
+  font-weight: 400;
 }
 
 .avara-orb {
@@ -202,45 +202,45 @@
   isolation: isolate;
 }
 
-/* Warm aura — soft champagne breath */
-.avara-aura {
+/* Soft contact shadow on the surface beneath the bubble */
+.avara-contact {
   position: absolute;
-  inset: -22%;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 8%;
   border-radius: 50%;
-  background:
-    radial-gradient(circle, rgba(216, 183, 106, 0.28) 0%, rgba(244, 167, 185, 0.10) 35%, transparent 65%);
-  filter: blur(32px);
-  animation: avara-aura 8s ease-in-out infinite;
+  background: radial-gradient(ellipse, rgba(120, 80, 40, 0.18) 0%, rgba(120, 80, 40, 0) 70%);
+  filter: blur(12px);
   z-index: 0;
+  animation: avara-contact 6s ease-in-out infinite;
 }
 
-/* Lavender/teal shimmer halo — slow rotating, very subtle */
-.avara-shimmer {
+/* Outer caustic warmth — the warm glow the bubble casts on the surface */
+.avara-caustic {
   position: absolute;
-  inset: -14%;
+  inset: -18%;
   border-radius: 50%;
   background:
-    conic-gradient(from 0deg,
-      rgba(201, 167, 255, 0) 0deg,
-      rgba(201, 167, 255, 0.14) 70deg,
-      rgba(120, 214, 198, 0.10) 160deg,
-      rgba(244, 167, 185, 0.08) 240deg,
-      rgba(201, 167, 255, 0) 360deg);
-  filter: blur(28px);
-  animation: avara-shimmer 32s linear infinite;
-  opacity: 0.5;
-  z-index: 1;
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 184, 112, 0.25) 0%,
+      rgba(244, 167, 185, 0.12) 40%,
+      transparent 70%);
+  filter: blur(36px);
+  z-index: 0;
+  animation: avara-aura 9s ease-in-out infinite;
 }
 
-.avara-breath {
+.avara-wobble {
   position: relative;
   width: 100%;
   height: 100%;
   z-index: 2;
-  animation: avara-breath 6s ease-in-out infinite;
+  animation: avara-wobble 7s ease-in-out infinite;
   filter:
-    drop-shadow(0 24px 48px rgba(80, 55, 20, 0.55))
-    drop-shadow(0 4px 12px rgba(216, 183, 106, 0.18));
+    drop-shadow(0 30px 40px rgba(180, 110, 60, 0.18))
+    drop-shadow(0 8px 16px rgba(244, 167, 185, 0.20));
 }
 
 .avara-svg {
@@ -249,110 +249,66 @@
   height: 100%;
 }
 
-.avara-rotate         { animation: avara-spin 42s linear infinite; }
-.avara-pool-a         { animation: avara-pool-a 11s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
-.avara-pool-b         { animation: avara-pool-b 13s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
-.avara-blush-orbit    { animation: avara-blush 10s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
+/* Caustic arcs that orbit the rim — the headline motion */
+.avara-caustic-orbit   { animation: avara-orbit 16s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.avara-caustic-orbit-2 { animation: avara-orbit-rev 22s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
 
-/* Living rim */
-.avara-rim-travel     { animation: avara-spin 14s linear infinite; }
-.avara-rim-counter    { animation: avara-spin-rev 22s linear infinite; }
-.avara-rim-base       { animation: avara-rim-pulse 6s ease-in-out infinite; }
-.avara-ticks          { animation: avara-rim-pulse 6s ease-in-out infinite; }
+/* Inner thinking pools — gentle in-place pulses */
+.avara-pool-a { animation: avara-pool-a 11s ease-in-out infinite; mix-blend-mode: multiply; }
+.avara-pool-b { animation: avara-pool-b 13s ease-in-out infinite; mix-blend-mode: multiply; }
 
-/* Caustic threads */
-.avara-thread          { stroke-dasharray: 60 240; }
-.avara-thread-1        { animation: avara-thread 12s linear infinite; }
-.avara-thread-2        { animation: avara-thread 16s linear infinite reverse; animation-delay: -3s; }
-.avara-thread-3        { animation: avara-thread 18s linear infinite; animation-delay: -7s; }
-
-/* Heartbeat pulse */
-.avara-pulse-ring      { transform-origin: 100px 100px; animation: avara-pulse-ring 7s ease-out infinite; }
-.avara-pulse-ring-2    { animation-delay: -3.5s; }
-
-/* Sheen sweep */
-.avara-sheen-sweep     { animation: avara-sheen-sweep 9s ease-in-out infinite; mix-blend-mode: screen; }
+/* Tiny highlight bead */
+.avara-bead   { animation: avara-bead 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 
 /* ── Keyframes ── */
 
-@keyframes avara-breath {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.035); }
+@keyframes avara-wobble {
+  0%, 100% { transform: scale(1)        translateY(0); }
+  50%      { transform: scale(1.025)    translateY(-3px); }
 }
 
 @keyframes avara-aura {
-  0%, 100% { transform: scale(1);    opacity: 0.7; }
-  50%      { transform: scale(1.10); opacity: 1;   }
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.08); opacity: 1; }
 }
 
-@keyframes avara-shimmer {
+@keyframes avara-contact {
+  0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 0.85; }
+  50%      { transform: translateX(-50%) scaleX(0.92); opacity: 1; }
+}
+
+@keyframes avara-orbit {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-
-@keyframes avara-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-@keyframes avara-spin-rev {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(-360deg); }
+@keyframes avara-orbit-rev {
+  from { transform: rotate(180deg); }
+  to   { transform: rotate(-180deg); }
 }
 
 @keyframes avara-pool-a {
-  0%, 100% { opacity: 0.85; transform: scale(1); }
-  50%      { opacity: 1;    transform: scale(1.04); }
+  0%, 100% { opacity: 0.8; transform: scale(1); transform-origin: center; }
+  50%      { opacity: 1;   transform: scale(1.05); }
 }
-
 @keyframes avara-pool-b {
-  0%, 100% { opacity: 0.7; transform: scale(1.02); }
-  50%      { opacity: 1;   transform: scale(0.97); }
+  0%, 100% { opacity: 0.7; transform: scale(1.02); transform-origin: center; }
+  50%      { opacity: 1;   transform: scale(0.96); }
 }
 
-@keyframes avara-blush {
-  0%, 100% { opacity: 0.85; transform: scale(1); }
-  50%      { opacity: 1;    transform: scale(1.03); }
-}
-
-@keyframes avara-rim-pulse {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 0.9; }
-}
-
-@keyframes avara-thread {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -300; }
-}
-
-@keyframes avara-pulse-ring {
-  0%   { transform: scale(0.45); opacity: 0;   }
-  20%  { opacity: 0.55; }
-  100% { transform: scale(1.0);  opacity: 0;   }
-}
-
-@keyframes avara-sheen-sweep {
-  0%   { transform: translateX(-30px); opacity: 0.4; }
-  50%  { transform: translateX(60px);  opacity: 0.9; }
-  100% { transform: translateX(160px); opacity: 0;   }
+@keyframes avara-bead {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.15); }
 }
 
 /* Reduced motion fallback */
-.avara-orb[data-reduced="true"] .avara-rotate,
+.avara-orb[data-reduced="true"] .avara-wobble,
+.avara-orb[data-reduced="true"] .avara-caustic,
+.avara-orb[data-reduced="true"] .avara-contact,
+.avara-orb[data-reduced="true"] .avara-caustic-orbit,
+.avara-orb[data-reduced="true"] .avara-caustic-orbit-2,
 .avara-orb[data-reduced="true"] .avara-pool-a,
 .avara-orb[data-reduced="true"] .avara-pool-b,
-.avara-orb[data-reduced="true"] .avara-blush-orbit,
-.avara-orb[data-reduced="true"] .avara-shimmer,
-.avara-orb[data-reduced="true"] .avara-aura,
-.avara-orb[data-reduced="true"] .avara-rim-travel,
-.avara-orb[data-reduced="true"] .avara-rim-counter,
-.avara-orb[data-reduced="true"] .avara-rim-base,
-.avara-orb[data-reduced="true"] .avara-ticks,
-.avara-orb[data-reduced="true"] .avara-thread,
-.avara-orb[data-reduced="true"] .avara-pulse-ring,
-.avara-orb[data-reduced="true"] .avara-sheen-sweep {
+.avara-orb[data-reduced="true"] .avara-bead {
   animation: none;
 }
-.avara-orb[data-reduced="true"] .avara-breath {
-  animation-duration: 12s;
-}
+
