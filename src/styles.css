@@ -222,13 +222,13 @@
   background:
     conic-gradient(from 0deg,
       rgba(201, 167, 255, 0) 0deg,
-      rgba(201, 167, 255, 0.18) 70deg,
-      rgba(120, 214, 198, 0.14) 160deg,
-      rgba(244, 167, 185, 0.10) 240deg,
+      rgba(201, 167, 255, 0.14) 70deg,
+      rgba(120, 214, 198, 0.10) 160deg,
+      rgba(244, 167, 185, 0.08) 240deg,
       rgba(201, 167, 255, 0) 360deg);
-  filter: blur(22px);
-  animation: avara-shimmer 24s linear infinite;
-  opacity: 0.85;
+  filter: blur(28px);
+  animation: avara-shimmer 32s linear infinite;
+  opacity: 0.5;
   z-index: 1;
 }
 
@@ -250,10 +250,28 @@
 }
 
 .avara-rotate         { animation: avara-spin 42s linear infinite; }
-.avara-pool-a         { animation: avara-drift-a 11s ease-in-out infinite; mix-blend-mode: screen; }
-.avara-pool-b         { animation: avara-drift-b 13s ease-in-out infinite; mix-blend-mode: screen; }
-.avara-blush-orbit    { animation: avara-blush 10s ease-in-out infinite; mix-blend-mode: screen; }
-.avara-spec           { animation: avara-spec 9s ease-in-out infinite; mix-blend-mode: screen; }
+.avara-pool-a         { animation: avara-pool-a 11s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
+.avara-pool-b         { animation: avara-pool-b 13s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
+.avara-blush-orbit    { animation: avara-blush 10s ease-in-out infinite; mix-blend-mode: screen; transform-box: fill-box; transform-origin: center; }
+
+/* Living rim */
+.avara-rim-travel     { animation: avara-spin 14s linear infinite; }
+.avara-rim-counter    { animation: avara-spin-rev 22s linear infinite; }
+.avara-rim-base       { animation: avara-rim-pulse 6s ease-in-out infinite; }
+.avara-ticks          { animation: avara-rim-pulse 6s ease-in-out infinite; }
+
+/* Caustic threads */
+.avara-thread          { stroke-dasharray: 60 240; }
+.avara-thread-1        { animation: avara-thread 12s linear infinite; }
+.avara-thread-2        { animation: avara-thread 16s linear infinite reverse; animation-delay: -3s; }
+.avara-thread-3        { animation: avara-thread 18s linear infinite; animation-delay: -7s; }
+
+/* Heartbeat pulse */
+.avara-pulse-ring      { transform-origin: 100px 100px; animation: avara-pulse-ring 7s ease-out infinite; }
+.avara-pulse-ring-2    { animation-delay: -3.5s; }
+
+/* Sheen sweep */
+.avara-sheen-sweep     { animation: avara-sheen-sweep 9s ease-in-out infinite; mix-blend-mode: screen; }
 
 /* ── Keyframes ── */
 
@@ -277,26 +295,46 @@
   to   { transform: rotate(360deg); }
 }
 
-@keyframes avara-drift-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(10px, -8px) scale(1.06); }
-  66%      { transform: translate(-9px, 6px) scale(0.96); }
+@keyframes avara-spin-rev {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
 }
 
-@keyframes avara-drift-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%      { transform: translate(-12px, 9px) scale(1.08); }
-  75%      { transform: translate(8px, -10px) scale(0.94); }
+@keyframes avara-pool-a {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.04); }
+}
+
+@keyframes avara-pool-b {
+  0%, 100% { opacity: 0.7; transform: scale(1.02); }
+  50%      { opacity: 1;   transform: scale(0.97); }
 }
 
 @keyframes avara-blush {
-  0%, 100% { transform: translate(0, 0); opacity: 0.95; }
-  50%      { transform: translate(6px, 4px); opacity: 1; }
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.03); }
 }
 
-@keyframes avara-spec {
-  0%, 100% { transform: translate(0, 0); opacity: 0.85; }
-  50%      { transform: translate(5px, 4px); opacity: 1; }
+@keyframes avara-rim-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.9; }
+}
+
+@keyframes avara-thread {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -300; }
+}
+
+@keyframes avara-pulse-ring {
+  0%   { transform: scale(0.45); opacity: 0;   }
+  20%  { opacity: 0.55; }
+  100% { transform: scale(1.0);  opacity: 0;   }
+}
+
+@keyframes avara-sheen-sweep {
+  0%   { transform: translateX(-30px); opacity: 0.4; }
+  50%  { transform: translateX(60px);  opacity: 0.9; }
+  100% { transform: translateX(160px); opacity: 0;   }
 }
 
 /* Reduced motion fallback */
@@ -304,9 +342,15 @@
 .avara-orb[data-reduced="true"] .avara-pool-a,
 .avara-orb[data-reduced="true"] .avara-pool-b,
 .avara-orb[data-reduced="true"] .avara-blush-orbit,
-.avara-orb[data-reduced="true"] .avara-spec,
 .avara-orb[data-reduced="true"] .avara-shimmer,
-.avara-orb[data-reduced="true"] .avara-aura {
+.avara-orb[data-reduced="true"] .avara-aura,
+.avara-orb[data-reduced="true"] .avara-rim-travel,
+.avara-orb[data-reduced="true"] .avara-rim-counter,
+.avara-orb[data-reduced="true"] .avara-rim-base,
+.avara-orb[data-reduced="true"] .avara-ticks,
+.avara-orb[data-reduced="true"] .avara-thread,
+.avara-orb[data-reduced="true"] .avara-pulse-ring,
+.avara-orb[data-reduced="true"] .avara-sheen-sweep {
   animation: none;
 }
 .avara-orb[data-reduced="true"] .avara-breath {
