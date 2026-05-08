@@ -255,9 +255,37 @@
   transform-style: preserve-3d;
   backface-visibility: visible;
   pointer-events: none;
-  mix-blend-mode: screen;
-  filter: brightness(var(--b, 1));
+  will-change: transform, filter, opacity;
   transition: opacity 120ms linear;
+}
+
+.avara-shard-front,
+.avara-shard-back {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: visible;
+  backface-visibility: visible;
+}
+
+.avara-shard-front { mix-blend-mode: screen; }
+.avara-shard-back  { mix-blend-mode: normal; opacity: 0.85; }
+
+.avara-inclusion-layer {
+  position: absolute;
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.avara-inclusion {
+  position: absolute;
+  left: 0; top: 0;
+  border-radius: 50%;
+  filter: blur(6px);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  will-change: transform;
 }
 
 .avara-core-glow {
