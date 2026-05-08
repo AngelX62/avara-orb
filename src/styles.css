@@ -218,7 +218,7 @@
 }
 
 /* Outer caustic warmth — the warm glow the bubble casts on the surface */
-.avara-caustic {
+.avara-aura {
   position: absolute;
   inset: -18%;
   border-radius: 50%;
@@ -232,39 +232,52 @@
   animation: avara-aura 9s ease-in-out infinite;
 }
 
-.avara-wobble {
+/* 3D scene + rotor */
+.avara-3d-scene {
   position: relative;
-  width: 100%;
-  height: 100%;
   z-index: 2;
-  animation: avara-wobble 7s ease-in-out infinite;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
   filter:
-    drop-shadow(0 30px 40px rgba(180, 110, 60, 0.18))
-    drop-shadow(0 8px 16px rgba(244, 167, 185, 0.20));
+    drop-shadow(0 30px 40px rgba(180, 110, 60, 0.22))
+    drop-shadow(0 10px 18px rgba(244, 167, 185, 0.18));
 }
 
-.avara-svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+.avara-3d-rotor {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
-/* Caustic arcs that orbit the rim — the headline motion */
-.avara-caustic-orbit   { animation: avara-orbit 16s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
-.avara-caustic-orbit-2 { animation: avara-orbit-rev 22s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.avara-shard {
+  position: absolute;
+  left: 0; top: 0;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: brightness(var(--b, 1));
+  transition: opacity 120ms linear;
+}
 
-/* Inner thinking pools — gentle in-place pulses */
-.avara-pool-a { animation: avara-pool-a 11s ease-in-out infinite; mix-blend-mode: multiply; }
-.avara-pool-b { animation: avara-pool-b 13s ease-in-out infinite; mix-blend-mode: multiply; }
+.avara-core-glow {
+  position: absolute;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 45%,
+      rgba(255, 247, 234, 0.95) 0%,
+      rgba(255, 184, 112, 0.55) 28%,
+      rgba(201, 167, 255, 0.30) 55%,
+      rgba(120, 214, 198, 0.18) 75%,
+      rgba(255, 247, 234, 0) 100%);
+  filter: blur(14px);
+  transform: translateZ(0);
+  animation: avara-core-pulse 6s ease-in-out infinite;
+}
 
-/* Tiny highlight bead */
-.avara-bead   { animation: avara-bead 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-
-/* ── Keyframes ── */
-
-@keyframes avara-wobble {
-  0%, 100% { transform: scale(1)        translateY(0); }
-  50%      { transform: scale(1.025)    translateY(-3px); }
+@keyframes avara-core-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.05); }
 }
 
 @keyframes avara-aura {
@@ -277,38 +290,13 @@
   50%      { transform: translateX(-50%) scaleX(0.92); opacity: 1; }
 }
 
-@keyframes avara-orbit {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+/* Reduced motion: freeze rotor at flattering angle, kill ambient anims */
+.avara-orb[data-reduced="true"] .avara-3d-rotor {
+  transform: rotateX(-14deg) rotateY(-25deg) !important;
 }
-@keyframes avara-orbit-rev {
-  from { transform: rotate(180deg); }
-  to   { transform: rotate(-180deg); }
-}
-
-@keyframes avara-pool-a {
-  0%, 100% { opacity: 0.8; transform: scale(1); transform-origin: center; }
-  50%      { opacity: 1;   transform: scale(1.05); }
-}
-@keyframes avara-pool-b {
-  0%, 100% { opacity: 0.7; transform: scale(1.02); transform-origin: center; }
-  50%      { opacity: 1;   transform: scale(0.96); }
-}
-
-@keyframes avara-bead {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50%      { opacity: 1;   transform: scale(1.15); }
-}
-
-/* Reduced motion fallback */
-.avara-orb[data-reduced="true"] .avara-wobble,
-.avara-orb[data-reduced="true"] .avara-caustic,
-.avara-orb[data-reduced="true"] .avara-contact,
-.avara-orb[data-reduced="true"] .avara-caustic-orbit,
-.avara-orb[data-reduced="true"] .avara-caustic-orbit-2,
-.avara-orb[data-reduced="true"] .avara-pool-a,
-.avara-orb[data-reduced="true"] .avara-pool-b,
-.avara-orb[data-reduced="true"] .avara-bead {
+.avara-orb[data-reduced="true"] .avara-core-glow,
+.avara-orb[data-reduced="true"] .avara-aura,
+.avara-orb[data-reduced="true"] .avara-contact {
   animation: none;
 }
 
