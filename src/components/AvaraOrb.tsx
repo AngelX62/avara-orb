@@ -1,18 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * AvaraOrb — rotating 3D crystal shard sphere.
+ * AvaraOrb — rotating 3D crystal sphere of living shards.
  *
- * Built from a low-poly icosahedron (20 triangular faces). Each face is
- * rendered as an SVG triangle placed in 3D space using CSS transforms.
- * The whole rotor spins continuously around Y with a slow X tilt wobble.
- * A directional "light" (top-left) modulates per-shard opacity each frame
- * via a single CSS variable + per-shard base offsets — no React re-renders.
+ * Geometry: low-poly icosahedron (20 triangular faces). Each face is a thin
+ * "prism" — front polygon + darker back polygon offset inward — plus an
+ * internal bevel inside the SVG to fake the side walls.
+ *
+ * Per-shard motion (single RAF loop, no React re-renders):
+ *   --z-offset : continuous radial breathing, per-shard phase
+ *   --rz       : tiny rotation jitter around the shard normal
+ *   --bloom    : occasional outward "catch the light" bloom
+ *   --b        : Lambertian brightness from a fixed top-left light
+ *
+ * Inside the sphere, ~8 "inclusions" drift on slow Lissajous paths and are
+ * visible *through* the translucent shards.
  */
 
 type Vec3 = [number, number, number];
 
-// ── Icosahedron geometry (unit radius) ───────────────────────────────────
 const PHI = (1 + Math.sqrt(5)) / 2;
 const RAW_VERTS: Vec3[] = [
   [-1,  PHI, 0], [ 1,  PHI, 0], [-1, -PHI, 0], [ 1, -PHI, 0],
@@ -25,28 +31,24 @@ const ICO_FACES: [number, number, number][] = [
   [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
   [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1],
 ];
-
-// Normalize all vertices to unit sphere
 const VERTS: Vec3[] = RAW_VERTS.map(([x, y, z]) => {
   const l = Math.hypot(x, y, z);
   return [x / l, y / l, z / l];
 });
 
-// Per-face precomputed centroid + normal (= centroid for unit sphere)
 type Face = {
-  p1: Vec3; p2: Vec3; p3: Vec3;
   centroid: Vec3;
-  // base rotation angle in degrees that brings facet to face the camera
-  // we rotate the planar triangle in CSS using rotateY then rotateX based on
-  // the centroid spherical coords.
-  yawDeg: number;   // rotateY
-  pitchDeg: number; // rotateX
-  // 2D triangle in the facet's local plane (after rotating to face camera)
+  yawDeg: number;
+  pitchDeg: number;
   local: { x: number; y: number }[];
+  breathPeriod: number;
+  breathPhase: number;
+  jitterPeriod: number;
+  jitterPhase: number;
 };
 
 function buildFaces(radius: number): Face[] {
-  return ICO_FACES.map(([a, b, c]) => {
+  return ICO_FACES.map(([a, b, c], idx) => {
     const p1 = VERTS[a]; const p2 = VERTS[b]; const p3 = VERTS[c];
     const cx = (p1[0] + p2[0] + p3[0]) / 3;
     const cy = (p1[1] + p2[1] + p3[1]) / 3;
@@ -54,45 +56,76 @@ function buildFaces(radius: number): Face[] {
     const cl = Math.hypot(cx, cy, cz);
     const centroid: Vec3 = [cx / cl, cy / cl, cz / cl];
 
-    // Spherical → rotateY (yaw around Y) + rotateX (pitch)
-    // We want the facet plane normal to point along centroid direction.
-    // After rotateY(yaw) rotateX(-pitch), the local +Z axis maps to centroid.
     const yaw = Math.atan2(centroid[0], centroid[2]) * 180 / Math.PI;
     const pitch = Math.asin(centroid[1]) * 180 / Math.PI;
 
-    // Build an orthonormal basis (u, v, n) where n = centroid
     const n: Vec3 = centroid;
-    // pick reference up
     const upRef: Vec3 = Math.abs(n[1]) > 0.95 ? [1, 0, 0] : [0, 1, 0];
-    // u = normalize(upRef × n)
     const ux = upRef[1] * n[2] - upRef[2] * n[1];
     const uy = upRef[2] * n[0] - upRef[0] * n[2];
     const uz = upRef[0] * n[1] - upRef[1] * n[0];
     const ul = Math.hypot(ux, uy, uz);
     const u: Vec3 = [ux / ul, uy / ul, uz / ul];
-    // v = n × u
     const v: Vec3 = [
       n[1] * u[2] - n[2] * u[1],
       n[2] * u[0] - n[0] * u[2],
       n[0] * u[1] - n[1] * u[0],
     ];
 
-    // Project each vertex onto the (u,v) plane relative to centroid
     const proj = (p: Vec3) => {
       const dx = p[0] - centroid[0];
       const dy = p[1] - centroid[1];
       const dz = p[2] - centroid[2];
-      // local x in CSS → along u; local y in CSS (down-positive) → along -v
       const lx = dx * u[0] + dy * u[1] + dz * u[2];
       const ly = -(dx * v[0] + dy * v[1] + dz * v[2]);
       return { x: lx * radius, y: ly * radius };
     };
 
+    const rnd = (seed: number) => {
+      const s = Math.sin(seed * 9301 + idx * 49297) * 233280;
+      return s - Math.floor(s);
+    };
+
     return {
-      p1, p2, p3, centroid,
+      centroid,
       yawDeg: yaw,
       pitchDeg: pitch,
       local: [proj(p1), proj(p2), proj(p3)],
+      breathPeriod: 5000 + rnd(1) * 4000,
+      breathPhase: rnd(2) * Math.PI * 2,
+      jitterPeriod: 7000 + rnd(3) * 5000,
+      jitterPhase: rnd(4) * Math.PI * 2,
+    };
+  });
+}
+
+type Inclusion = {
+  ax: number; ay: number; az: number;
+  px: number; py: number; pz: number;
+  phx: number; phy: number; phz: number;
+  size: number;
+  color: string;
+};
+
+function buildInclusions(radius: number): Inclusion[] {
+  const palette = ["#FFB870", "#C9A7FF", "#78D6C6", "#F4A7B9", "#FFF7EA"];
+  return Array.from({ length: 8 }, (_, i) => {
+    const r = (s: number) => {
+      const v = Math.sin(s * 12.9898 + i * 78.233) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    return {
+      ax: radius * (0.15 + r(2) * 0.30),
+      ay: radius * (0.15 + r(3) * 0.30),
+      az: radius * (0.15 + r(4) * 0.30),
+      px: 6000 + r(5) * 6000,
+      py: 7000 + r(6) * 6000,
+      pz: 8000 + r(7) * 6000,
+      phx: r(8) * Math.PI * 2,
+      phy: r(9) * Math.PI * 2,
+      phz: r(10) * Math.PI * 2,
+      size: 16 + r(11) * 24,
+      color: palette[i % palette.length],
     };
   });
 }
@@ -109,69 +142,101 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const radius = size * 0.42; // sphere radius in px
+  const radius = size * 0.42;
+  const depth = radius * 0.09;
   const faces = useMemo(() => buildFaces(radius), [radius]);
+  const inclusions = useMemo(() => buildInclusions(radius), [radius]);
 
-  // RAF loop: write current global yaw to a CSS var; per-shard opacity is
-  // computed in CSS using the shard's stored base yaw — but CSS can't easily
-  // do trig, so we compute brightness in JS once per frame and write each
-  // shard's opacity. To stay cheap we batch: 20 facets * 60fps = 1200 writes/s.
   useEffect(() => {
     if (reduced) return;
     const rotor = rotorRef.current;
     if (!rotor) return;
     const shards = Array.from(rotor.querySelectorAll<HTMLElement>("[data-shard]"));
+    const incs = Array.from(rotor.querySelectorAll<HTMLElement>("[data-inclusion]"));
     let raf = 0;
     const start = performance.now();
-    const SPIN_MS = 22000; // Y rotation period
-    const TILT_MS = 40000; // X wobble period
+    const SPIN_MS = 24000;
+    const TILT_MS = 40000;
+
+    type Bloom = { idx: number; start: number; dur: number };
+    const blooms: Bloom[] = [];
+    let nextBloomAt = start + 1500;
+
+    const Lx = -0.55, Ly = 0.7, Lz = 0.45;
+    const Ll = Math.hypot(Lx, Ly, Lz);
+    const lx = Lx / Ll, ly = Ly / Ll, lz = Lz / Ll;
 
     const tick = (t: number) => {
       const dt = t - start;
-      const yaw = (dt / SPIN_MS) * 360; // deg
-      const tilt = Math.sin((dt / TILT_MS) * Math.PI * 2) * 12 - 14; // base tilt -14, wobble ±12
+      const yaw = (dt / SPIN_MS) * 360;
+      const tilt = Math.sin((dt / TILT_MS) * Math.PI * 2) * 12 - 14;
       rotor.style.transform = `rotateX(${tilt}deg) rotateY(${yaw}deg)`;
 
-      // Light direction in world space (top-left front): normalized
-      // Lx=-0.5, Ly=0.7, Lz=0.5
-      const Lx = -0.5, Ly = 0.7, Lz = 0.5;
-      const Ll = Math.hypot(Lx, Ly, Lz);
-      const lx = Lx / Ll, ly = Ly / Ll, lz = Lz / Ll;
+      if (t >= nextBloomAt) {
+        const idx = Math.floor(Math.random() * faces.length);
+        blooms.push({ idx, start: t, dur: 1600 });
+        nextBloomAt = t + 1800 + Math.random() * 2200;
+      }
+      for (let i = blooms.length - 1; i >= 0; i--) {
+        if (t - blooms[i].start > blooms[i].dur) blooms.splice(i, 1);
+      }
 
-      // Apply rotor rotation to each face normal: rotateY(yaw) then rotateX(tilt)
       const yr = (yaw * Math.PI) / 180;
       const xr = (tilt * Math.PI) / 180;
       const cy = Math.cos(yr), sy = Math.sin(yr);
       const cx = Math.cos(xr), sx = Math.sin(xr);
 
       for (let i = 0; i < faces.length; i++) {
-        const n = faces[i].centroid;
-        // rotateY
+        const f = faces[i];
+        const n = f.centroid;
         let nx = n[0] * cy + n[2] * sy;
         let ny = n[1];
         let nz = -n[0] * sy + n[2] * cy;
-        // rotateX
         const ny2 = ny * cx - nz * sx;
         const nz2 = ny * sx + nz * cx;
         ny = ny2; nz = nz2;
 
-        // Lambertian (clamped) + ambient
         const dot = nx * lx + ny * ly + nz * lz;
         const lam = Math.max(0, dot);
-        // Front-facing factor (camera looks down -Z, so nz>0 means facing camera)
-        const front = (nz + 1) / 2; // 0..1
-        const brightness = 0.18 + lam * 0.65 + front * 0.25; // 0..~1.08
-        const opacity = Math.min(1, 0.22 + front * 0.78);
+        const front = (nz + 1) / 2;
+        const brightness = 0.35 + lam * 0.55 + front * 0.20;
+        const opacity = Math.min(1, 0.30 + front * 0.70);
+
+        const breath = Math.sin((dt / f.breathPeriod) * Math.PI * 2 + f.breathPhase);
+        const jitter = Math.sin((dt / f.jitterPeriod) * Math.PI * 2 + f.jitterPhase);
+        const zOff = breath * 4.5;
+        const rz = jitter * 2.2;
+
+        let bloom = 0;
+        for (let b = 0; b < blooms.length; b++) {
+          if (blooms[b].idx === i) {
+            const p = (t - blooms[b].start) / blooms[b].dur;
+            bloom = Math.sin(p * Math.PI);
+          }
+        }
+
         const el = shards[i];
         el.style.opacity = String(opacity);
         el.style.setProperty("--b", brightness.toFixed(3));
+        el.style.setProperty("--z-offset", `${zOff.toFixed(2)}px`);
+        el.style.setProperty("--rz", `${rz.toFixed(2)}deg`);
+        el.style.setProperty("--bloom", bloom.toFixed(3));
+      }
+
+      for (let i = 0; i < inclusions.length; i++) {
+        const inc = inclusions[i];
+        const x = Math.sin((dt / inc.px) * Math.PI * 2 + inc.phx) * inc.ax;
+        const y = Math.sin((dt / inc.py) * Math.PI * 2 + inc.phy) * inc.ay;
+        const z = Math.cos((dt / inc.pz) * Math.PI * 2 + inc.phz) * inc.az;
+        incs[i].style.transform =
+          `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(2)}px)`;
       }
 
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [faces, reduced]);
+  }, [faces, inclusions, reduced]);
 
   return (
     <div
@@ -190,63 +255,123 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
           className="avara-3d-rotor"
           style={{ width: size, height: size, transform: "rotateX(-14deg) rotateY(0deg)" }}
         >
-          {/* Inner core glow — visible through the shards */}
           <div
             className="avara-core-glow"
             style={{
-              width: radius * 1.6,
-              height: radius * 1.6,
-              left: size / 2 - radius * 0.8,
-              top: size / 2 - radius * 0.8,
+              width: radius * 1.7,
+              height: radius * 1.7,
+              left: size / 2 - radius * 0.85,
+              top: size / 2 - radius * 0.85,
             }}
             aria-hidden
           />
 
+          <div
+            className="avara-inclusion-layer"
+            style={{ left: size / 2, top: size / 2 }}
+            aria-hidden
+          >
+            {inclusions.map((inc, i) => (
+              <div
+                key={i}
+                data-inclusion
+                className="avara-inclusion"
+                style={{
+                  width: inc.size,
+                  height: inc.size,
+                  marginLeft: -inc.size / 2,
+                  marginTop: -inc.size / 2,
+                  background: `radial-gradient(circle, ${inc.color} 0%, ${inc.color}00 70%)`,
+                }}
+              />
+            ))}
+          </div>
+
           {faces.map((f, i) => {
-            // Bounding box for SVG viewBox
             const xs = f.local.map((p) => p.x);
             const ys = f.local.map((p) => p.y);
             const minX = Math.min(...xs), maxX = Math.max(...xs);
             const minY = Math.min(...ys), maxY = Math.max(...ys);
             const w = maxX - minX, h = maxY - minY;
-            const pad = 1;
+            const pad = 2;
             const points = f.local
               .map((p) => `${(p.x - minX + pad).toFixed(2)},${(p.y - minY + pad).toFixed(2)}`)
               .join(" ");
+            const lcx = (minX + maxX) / 2;
+            const lcy = (minY + maxY) / 2;
+            const inset = f.local
+              .map((p) => {
+                const ix = lcx + (p.x - lcx) * 0.62;
+                const iy = lcy + (p.y - lcy) * 0.62;
+                return `${(ix - minX + pad).toFixed(2)},${(iy - minY + pad).toFixed(2)}`;
+              })
+              .join(" ");
 
-            // Choose gradient palette based on facet vertical position
             const cy = f.centroid[1];
             const palette =
               cy > 0.4
-                ? ["#FFF7EA", "#FBE6D2", "#D8B76A"] // top: ivory→champagne
+                ? ["#FFF7EA", "#FBE6D2", "#D8B76A"]
                 : cy > -0.2
-                ? ["#FFF7EA", "#F4C9B0", "#F4A7B9"] // mid: ivory→blush
-                : ["#F4A7B9", "#C9A7FF", "#78D6C6"]; // bottom: blush→lavender→teal
+                ? ["#FFF7EA", "#F4C9B0", "#F4A7B9"]
+                : ["#F4A7B9", "#C9A7FF", "#78D6C6"];
 
-            const gradId = `avara-shard-grad-${i}`;
-            const transform =
+            const gradId = `g-${i}`;
+            const gradInner = `gi-${i}`;
+            const gradBack = `gb-${i}`;
+
+            const baseTransform =
               `translate(${size / 2}px, ${size / 2}px) ` +
-              `rotateY(${f.yawDeg}deg) rotateX(${-f.pitchDeg}deg) ` +
-              `translateZ(${radius}px)`;
+              `rotateY(${f.yawDeg}deg) rotateX(${-f.pitchDeg}deg)`;
 
             return (
               <div
                 key={i}
                 data-shard
                 className="avara-shard"
-                style={{
-                  width: w + pad * 2,
-                  height: h + pad * 2,
-                  marginLeft: -(w + pad * 2) / 2,
-                  marginTop: -(h + pad * 2) / 2,
-                  transform,
-                }}
+                style={
+                  {
+                    width: w + pad * 2,
+                    height: h + pad * 2,
+                    marginLeft: -(w + pad * 2) / 2,
+                    marginTop: -(h + pad * 2) / 2,
+                    transform:
+                      `${baseTransform} ` +
+                      `translateZ(calc(${radius}px + var(--z-offset, 0px) + var(--bloom, 0) * 8px)) ` +
+                      `rotateZ(var(--rz, 0deg))`,
+                    filter: `brightness(calc(var(--b, 1) + var(--bloom, 0) * 0.55))`,
+                  } as React.CSSProperties
+                }
               >
+                {/* BACK face */}
                 <svg
                   viewBox={`0 0 ${w + pad * 2} ${h + pad * 2}`}
                   width="100%"
                   height="100%"
-                  style={{ display: "block", overflow: "visible" }}
+                  className="avara-shard-back"
+                  style={{ transform: `translateZ(${-depth}px)` }}
+                >
+                  <defs>
+                    <linearGradient id={gradBack} x1="20%" y1="10%" x2="80%" y2="90%">
+                      <stop offset="0%" stopColor="#7A5A28" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="#15120F" stopOpacity="0.45" />
+                    </linearGradient>
+                  </defs>
+                  <polygon
+                    points={points}
+                    fill={`url(#${gradBack})`}
+                    stroke="#7A5A28"
+                    strokeOpacity="0.7"
+                    strokeWidth="0.6"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                {/* FRONT face with bevel */}
+                <svg
+                  viewBox={`0 0 ${w + pad * 2} ${h + pad * 2}`}
+                  width="100%"
+                  height="100%"
+                  className="avara-shard-front"
                 >
                   <defs>
                     <linearGradient id={gradId} x1="20%" y1="10%" x2="80%" y2="90%">
@@ -254,24 +379,34 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                       <stop offset="55%" stopColor={palette[1]} stopOpacity="0.55" />
                       <stop offset="100%" stopColor={palette[2]} stopOpacity="0.40" />
                     </linearGradient>
+                    <radialGradient id={gradInner} cx="35%" cy="30%" r="70%">
+                      <stop offset="0%" stopColor="#FFF7EA" stopOpacity="0.95" />
+                      <stop offset="60%" stopColor={palette[1]} stopOpacity="0.50" />
+                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.30" />
+                    </radialGradient>
                   </defs>
                   <polygon
                     points={points}
                     fill={`url(#${gradId})`}
                     stroke="#D8B76A"
-                    strokeOpacity="0.55"
-                    strokeWidth="0.5"
+                    strokeOpacity="0.7"
+                    strokeWidth="0.7"
                     strokeLinejoin="round"
                   />
-                  {/* inner highlight streak for glass feel */}
                   <polygon
-                    points={points}
-                    fill="none"
+                    points={inset}
+                    fill={`url(#${gradInner})`}
                     stroke="#FFF7EA"
-                    strokeOpacity="0.35"
-                    strokeWidth="0.3"
+                    strokeOpacity="0.55"
+                    strokeWidth="0.4"
                     strokeLinejoin="round"
-                    transform="scale(0.78) translate(8 6)"
+                  />
+                  <circle
+                    cx={f.local[0].x - minX + pad}
+                    cy={f.local[0].y - minY + pad}
+                    r="0.9"
+                    fill="#FFFFFF"
+                    opacity="0.9"
                   />
                 </svg>
               </div>
