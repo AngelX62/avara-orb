@@ -202,53 +202,34 @@
   isolation: isolate;
 }
 
-/* Soft contact shadow on the surface beneath the cluster */
+/* Soft contact shadow on the surface beneath the bubble */
 .avara-contact {
   position: absolute;
-  bottom: 2%;
+  bottom: 4%;
   left: 50%;
   transform: translateX(-50%);
-  width: 64%;
-  height: 7%;
+  width: 70%;
+  height: 8%;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(80, 50, 25, 0.32) 0%, rgba(80, 50, 25, 0) 70%);
-  filter: blur(14px);
+  background: radial-gradient(ellipse, rgba(120, 80, 40, 0.18) 0%, rgba(120, 80, 40, 0) 70%);
+  filter: blur(12px);
   z-index: 0;
-  animation: avara-contact 7s ease-in-out infinite;
+  animation: avara-contact 6s ease-in-out infinite;
 }
 
-/* Outer warm bloom */
+/* Outer caustic warmth — the warm glow the bubble casts on the surface */
 .avara-aura {
   position: absolute;
-  inset: -24%;
+  inset: -18%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 45%,
-      rgba(255, 184, 112, 0.22) 0%,
-      rgba(244, 167, 185, 0.10) 42%,
-      transparent 72%);
-  filter: blur(42px);
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 184, 112, 0.25) 0%,
+      rgba(244, 167, 185, 0.12) 40%,
+      transparent 70%);
+  filter: blur(36px);
   z-index: 0;
-  animation: avara-aura 11s ease-in-out infinite;
-}
-
-/* Cool lavender ground bloom */
-.avara-aura-cool {
-  position: absolute;
-  left: 50%;
-  bottom: -10%;
-  transform: translateX(-50%);
-  width: 110%;
-  height: 50%;
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse at 50% 80%,
-      rgba(184, 155, 232, 0.22) 0%,
-      rgba(120, 214, 198, 0.10) 45%,
-      transparent 75%);
-  filter: blur(40px);
-  z-index: 0;
-  pointer-events: none;
+  animation: avara-aura 9s ease-in-out infinite;
 }
 
 /* 3D scene + rotor */
@@ -278,21 +259,17 @@
   transition: opacity 120ms linear;
 }
 
-.avara-shard-front {
+.avara-shard-front,
+.avara-shard-back {
   position: absolute;
   inset: 0;
   display: block;
   overflow: visible;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
-.avara-cluster-breath {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
+.avara-shard-front { mix-blend-mode: screen; }
+.avara-shard-back  { mix-blend-mode: normal; opacity: 0.85; }
 
 .avara-inclusion-layer {
   position: absolute;
@@ -305,9 +282,9 @@
   position: absolute;
   left: 0; top: 0;
   border-radius: 50%;
-  filter: blur(7px);
+  filter: blur(6px);
   mix-blend-mode: screen;
-  opacity: 0.55;
+  opacity: 0.85;
   will-change: transform;
 }
 
