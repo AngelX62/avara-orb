@@ -321,12 +321,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
               .join(" ");
 
             const cy = f.centroid[1];
-            const palette =
-              cy > 0.4
-                ? ["#FFF7EA", "#FBE6D2", "#D8B76A"]
-                : cy > -0.2
-                ? ["#FFF7EA", "#F4C9B0", "#F4A7B9"]
-                : ["#F4A7B9", "#C9A7FF", "#78D6C6"];
+            const isCoral = CORAL_FACETS.has(i);
+            const palette = isCoral
+              ? [CORAL_LIGHT, CORAL_PRIMARY, CORAL_DEEP]
+              : cy > 0.4
+              ? ["#C9A98A", "#8E7AA8", "#3E7A74"]
+              : cy > -0.2
+              ? ["#C9A98A", "#D49A92", "#6B7A65"]
+              : ["#8E7AA8", "#3E7A74", "#2A2622"];
 
             const gradId = `g-${i}`;
             const gradInner = `gi-${i}`;
