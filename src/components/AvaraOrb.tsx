@@ -376,14 +376,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                 >
                   <defs>
                     <linearGradient id={gradBack} x1="20%" y1="10%" x2="80%" y2="90%">
-                      <stop offset="0%" stopColor="#7A5A28" stopOpacity="0.55" />
-                      <stop offset="100%" stopColor="#15120F" stopOpacity="0.45" />
+                      <stop offset="0%" stopColor="#3A2820" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="#15100C" stopOpacity="0.45" />
                     </linearGradient>
                   </defs>
                   <polygon
                     points={points}
                     fill={`url(#${gradBack})`}
-                    stroke="#7A5A28"
+                    stroke="#3A2820"
                     strokeOpacity="0.7"
                     strokeWidth="0.6"
                     strokeLinejoin="round"
