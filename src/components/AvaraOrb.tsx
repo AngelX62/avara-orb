@@ -404,7 +404,7 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                       <stop offset="100%" stopColor={palette[2]} stopOpacity="0.55" />
                     </linearGradient>
                     <radialGradient id={gradInner} cx="35%" cy="30%" r="70%">
-                      <stop offset="0%" stopColor={isCoral ? "#FFE4DC" : "#FFF7EA"} stopOpacity="0.88" />
+                      <stop offset="0%" stopColor={isCoral ? ROSE_GOLD : "#F4E8D8"} stopOpacity="0.88" />
                       <stop offset="60%" stopColor={palette[1]} stopOpacity="0.55" />
                       <stop offset="100%" stopColor={palette[2]} stopOpacity="0.38" />
                     </radialGradient>
