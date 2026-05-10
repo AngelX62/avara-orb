@@ -23,7 +23,7 @@ function Index() {
         <AvaraOrb size={340} />
         <div className="avara-wordmark">
           <span>A V A R A</span>
-          <small>AI command assistant · Avitus</small>
+          <small>Lead intelligence assistant · Avitus</small>
         </div>
       </div>
     </main>
