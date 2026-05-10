@@ -181,7 +181,12 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
       rotor.style.transform = `rotateX(${tilt}deg) rotateY(${yaw}deg)`;
 
       if (t >= nextBloomAt) {
-        const idx = Math.floor(Math.random() * faces.length);
+        // Bias selection toward coral facets (~3× more likely)
+        const coralArr = Array.from(CORAL_FACETS);
+        const useCoral = Math.random() < 0.55;
+        const idx = useCoral
+          ? coralArr[Math.floor(Math.random() * coralArr.length)]
+          : Math.floor(Math.random() * faces.length);
         blooms.push({ idx, start: t, dur: 1600 });
         nextBloomAt = t + 1800 + Math.random() * 2200;
       }
