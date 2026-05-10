@@ -107,9 +107,17 @@ type Inclusion = {
   color: string;
 };
 
+// Coral accents — used sparingly (~10–15% of presence)
+const CORAL_PRIMARY = "#F26D5B";
+const CORAL_LIGHT = "#FF7A6B";
+const CORAL_DEEP = "#E96A5B";
+// Designated coral accent facets (out of 20)
+const CORAL_FACETS = new Set<number>([4, 13]);
+
 function buildInclusions(radius: number): Inclusion[] {
-  const palette = ["#FFB870", "#C9A7FF", "#78D6C6", "#F4A7B9", "#FFF7EA"];
-  return Array.from({ length: 8 }, (_, i) => {
+  // Reduced champagne dominance; one coral inclusion for inner warmth
+  const palette = [CORAL_PRIMARY, "#3E7A74", "#8E7AA8", "#3E7A74", "#D49A92", "#C9A98A"];
+  return Array.from({ length: 6 }, (_, i) => {
     const r = (s: number) => {
       const v = Math.sin(s * 12.9898 + i * 78.233) * 43758.5453;
       return v - Math.floor(v);

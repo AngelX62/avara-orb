@@ -1,60 +1,61 @@
-# Avara Crystal — Make the Shards Truly 3D & Alive
+## Avara prism — coral warmth refinement
 
-The current shards are flat triangles glued to a sphere — they only move because the whole ball rotates. The fix is two-fold: give each shard **real volumetric depth** (so it reads as a chunk of crystal, not a paper cutout) and give each shard **its own continuous, organic motion** (so the surface feels alive, like a slowly breathing geode).
+This is a **color and accent pass only**. The faceted icosahedron prism, its 3D rotation, breathing, jitter, and bloom motion all stay exactly as they are. No geometry, layout, typography system, or page structure changes.
 
-## 1. Volumetric shards (real 3D, not flat)
+### Goals
 
-Each facet becomes a thin **prism**, not a single polygon:
+- Inject controlled coral warmth (~10–15% of overall presence)
+- Make the center more readable (slightly higher contrast/opacity)
+- Reduce pale beige/champagne dominance
+- Promote one or two facets to coral-accent role
+- Repurpose the existing bloom animation as the "activation triangle" coral pop
+- Update tagline text
 
-- **Front face**: the existing triangle, at `translateZ(radius)` (outer skin).
-- **Back face**: same triangle, at `translateZ(radius - depth)` (inner skin), darker fill (`#7A5A28` @ 0.35) so we see "into" the crystal.
-- **Side walls**: 3 thin quads connecting the edges of front→back. Rendered as separate `<div>`s with their own CSS transforms (`rotateY/rotateX` to align with each edge, then `scaleY` to the depth).
-- **Depth**: ~6–10% of the sphere radius. Just enough to catch a different brightness than the front face when the rotor turns.
+### Changes
 
-Result: as the ball spins, you see the bevelled side walls of each shard catch and lose light — the unmistakable look of cut glass.
+**1. `src/components/AvaraOrb.tsx` — palette + accent assignment**
 
-The Lambertian lighting loop already computes a per-face normal; we extend it to also light the side walls (their normals are tangent to the sphere, perpendicular to the face normal). Each side wall gets its own brightness CSS var.
+- Introduce a small palette constant at the top of the file:
+  - `CORAL_PRIMARY = "#F26D5B"`
+  - `CORAL_LIGHT   = "#FF7A6B"`
+  - `CORAL_DEEP    = "#E96A5B"`
+  - Existing supporting tones kept: deep teal `#3E7A74`, charcoal `#2A2622`, muted violet `#8E7AA8`, smoky green `#6B7A65`, warm stone `#C9A98A`, dusty rose `#D49A92`.
+- Designate **2 of the 20 facets as "coral accent" facets** (deterministic indices, e.g. face 4 and face 13 — chosen so one sits upper-right, one lower-left, ensuring at least one is usually camera-facing during rotation). All other facets keep their current zone-based palette but with the champagne/ivory presence reduced.
+- Rebalance the zone palettes (used by the front-face linear gradient):
+  - Top zone (`cy > 0.4`):   stone → muted violet → deep teal
+  - Mid zone:                stone → dusty rose → smoky green
+  - Bottom zone:             muted violet → deep teal → charcoal
+  - Coral facets override:   `CORAL_LIGHT → CORAL_PRIMARY → CORAL_DEEP`
+- Slightly raise opacity stops on the front gradient (e.g. `0.85 → 0.92`, `0.55 → 0.65`, `0.40 → 0.50`) so the prism reads more solidly at the center.
+- Inner inclusions (`buildInclusions`): reduce champagne/ivory dots, replace with `CORAL_PRIMARY` ×1, deep teal ×2, muted violet ×2, dusty rose ×1, stone ×1, charcoal-warm ×1. Drop count from 8 → 6 to reduce noise.
 
-## 2. Per-shard organic motion (the "alive" part)
+**2. Activation triangle pop (reuse existing bloom system, no new animation cost)**
 
-Each shard gets three independent, continuous motions layered on top of the rotor's spin:
+The existing RAF loop already picks a random shard for an occasional `--bloom`. Bias selection so the **two coral accent facets are 3× more likely** to be the chosen bloom target. When they bloom, multiply the bloom brightness factor in the inline `filter` so the coral shard "pops" more visibly than other facets (`var(--bloom) * 0.85` for coral vs `* 0.55` for others — controlled via a `--bloom-gain` per-shard CSS var). No new keyframes, no glow, no particles.
 
-- **Radial breathing** — every shard pulses in/out along its own normal (`translateZ` between `radius` and `radius + 4–8px`) on a per-shard phase offset. Period ~5–9s, randomized per shard. Gives a subtle "the crystal is breathing" feel.
-- **Facet jitter** — tiny rotation around the shard's own normal (`rotateZ ±2°`) on a slow sine, different phase per shard. Makes adjacent facets shimmer-shift relative to each other.
-- **Occasional bloom** — every ~6s a random shard briefly translates outward an extra ~6px and brightens (~1.5×) over 1.2s, then settles back. Reads like light catching one specific facet, then another. Sequenced so 1–2 shards are blooming at any moment.
+**3. `src/styles.css` — center warmth + aura tone**
 
-All three are driven from the **same RAF loop** that already updates lighting — no new timers. Per-shard state is precomputed (phase offsets, periods, bloom schedule) and the loop writes:
+- `.avara-core-glow` background gradient: shift the second stop from amber `rgba(255,184,112,0.55)` to coral `rgba(242,109,91,0.42)`, keep violet/teal stops, and bump the inner ivory stop alpha from `0.95 → 0.88` so coral reads through more. This delivers the "soft inner warmth near the center."
+- `.avara-aura`: replace the amber inner stop with a softer coral `rgba(242,109,91,0.18)` and reduce overall intensity so the surrounding ambient is calmer (less beige bloom).
+- `.avara-stage` background: nudge the radial-gradient stops toward a slightly cooler stone (`#F6F0E6 → #ECE3D4 → #E0D5C2`) so champagne dominance recedes.
+- No changes to `.avara-shard*`, `.avara-inclusion`, transform-style, blend-modes, or motion.
 
-- `--z-offset` (radial breath, px)
-- `--rz` (jitter, deg)
-- `--bloom` (0..1 multiplier on outward push + brightness)
+**4. `src/routes/index.tsx` — tagline only**
 
-Each shard's transform becomes:
-`translate(...) rotateY(yaw) rotateX(-pitch) translateZ(calc(var(--base-r) + var(--z-offset) + var(--bloom) * 6px)) rotateZ(var(--rz))`
+- Change `<small>AI command assistant · Avitus</small>` → `<small>Lead intelligence assistant · Avitus</small>`
+- Update `<head>` `title` and `meta description` to reflect "Lead Intelligence Assistant" (keeps SEO honest).
+- AVARA wordmark unchanged (spacing, weight, casing).
 
-Brightness becomes:
-`filter: brightness(calc(var(--b) + var(--bloom) * 0.5))`
+### What stays exactly the same
 
-## 3. Inner refraction layer (sells the "glass")
+- Icosahedron geometry (20 faces), prism front+back structure, bevel inset, vertex sparkle dot
+- All RAF motion: spin (24s), tilt (40s), per-shard breath, jitter, bloom timing
+- `transform-style: preserve-3d`, blend modes, drop-shadow stack
+- Reduced-motion fallback
+- File layout, route structure, design tokens
 
-Behind the shards (closer to center, at `translateZ(radius * 0.55)`) add 6–8 small floating "inclusions" — tiny gradient orbs in lavender/teal/champagne that drift on slow random paths inside the sphere. Visible *through* the shards because shard fills are semi-transparent. This is the part that makes you feel the crystal has interior volume.
+### Out of scope
 
-## 4. Edge sparkles (optional polish)
-
-When a shard's bloom peaks, a tiny `<circle>` flashes at its centroid (200ms scale + fade). One simple keyframe, triggered by toggling a class via the same RAF scheduler.
-
-## Files to change
-
-- **`src/components/AvaraOrb.tsx`** — extend each face to a prism (front + back + 3 sides as separate child divs inside `.avara-shard`). Precompute per-shard `phase`, `breathPeriod`, `jitterPeriod`, and a shared `bloomSchedule` (next-bloom timestamp + which shard index). Extend RAF loop to also update side-wall brightness, write `--z-offset`/`--rz`/`--bloom` per shard, and trigger sparkle flashes. Add inner-inclusion divs (6–8) in a sibling layer with their own transforms updated each frame on slow Lissajous paths. Keep `.avara-core-glow` as the base warmth.
-
-- **`src/styles.css`** — add `.avara-shard-front`, `.avara-shard-back`, `.avara-shard-side` styles (with `transform-style: preserve-3d`, backface, and per-element brightness via `--bs` for sides). Add `.avara-inclusion` with blur + mix-blend-mode. Add `.avara-sparkle` keyframe (scale 0→1.6, opacity 1→0, 200ms). Keep all existing rotor/scene/aura/contact rules.
-
-- **`src/routes/index.tsx`** — no change.
-
-## Performance
-
-- 20 shards × 5 sub-elements (1 front + 1 back + 3 sides) = 100 nodes, plus ~8 inclusions. One RAF loop, all writes are CSS variables on existing elements (no DOM mutations after mount). No React re-renders after mount. Stays smooth at 60fps.
-
-## Result
-
-A slowly turning crystal where every shard has visible bevelled depth, breathes on its own rhythm, and occasionally one facet blooms outward with a tiny sparkle — a living geode, unmistakably 3D, unmistakably Avara. Wordmark stays untouched.
+- No WebGL/canvas/particles
+- No new fonts, no nav, no extra sections
+- No semantic token churn in `:root` / `.dark` (the prism uses its own palette by design — those tokens stay untouched)
