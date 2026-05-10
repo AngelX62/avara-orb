@@ -111,12 +111,21 @@ type Inclusion = {
 const CORAL_PRIMARY = "#F26D5B";
 const CORAL_LIGHT = "#FF7A6B";
 const CORAL_DEEP = "#E96A5B";
-// Designated coral accent facets (out of 20)
-const CORAL_FACETS = new Set<number>([4, 13]);
+// Warm boutique palette
+const ESPRESSO = "#2A1F1A";
+const GRAPHITE = "#3A332E";
+const SMOKY_BROWN = "#5C4A3E";
+const WARM_TAUPE = "#8C7867";
+const MUTED_PLUM = "#6E5263";
+const DUSTY_ROSE = "#C9A29A";
+const CHAMPAGNE = "#D9C4A3";
+const ROSE_GOLD = "#E8B89A";
+// Designated coral accent facets (out of 20) — upper-right + side-mid
+const CORAL_FACETS = new Set<number>([3, 14]);
 
 function buildInclusions(radius: number): Inclusion[] {
-  // Reduced champagne dominance; one coral inclusion for inner warmth
-  const palette = [CORAL_PRIMARY, "#3E7A74", "#8E7AA8", "#3E7A74", "#D49A92", "#C9A98A"];
+  // Warm-only inclusions, no teal
+  const palette = [CORAL_PRIMARY, MUTED_PLUM, WARM_TAUPE, ROSE_GOLD, SMOKY_BROWN, DUSTY_ROSE];
   return Array.from({ length: 6 }, (_, i) => {
     const r = (s: number) => {
       const v = Math.sin(s * 12.9898 + i * 78.233) * 43758.5453;
@@ -325,10 +334,10 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
             const palette = isCoral
               ? [CORAL_LIGHT, CORAL_PRIMARY, CORAL_DEEP]
               : cy > 0.4
-              ? ["#C9A98A", "#8E7AA8", "#3E7A74"]
+              ? [WARM_TAUPE, MUTED_PLUM, GRAPHITE]
               : cy > -0.2
-              ? ["#C9A98A", "#D49A92", "#6B7A65"]
-              : ["#8E7AA8", "#3E7A74", "#2A2622"];
+              ? [CHAMPAGNE, DUSTY_ROSE, SMOKY_BROWN]
+              : [MUTED_PLUM, SMOKY_BROWN, ESPRESSO];
 
             const gradId = `g-${i}`;
             const gradInner = `gi-${i}`;
@@ -367,14 +376,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                 >
                   <defs>
                     <linearGradient id={gradBack} x1="20%" y1="10%" x2="80%" y2="90%">
-                      <stop offset="0%" stopColor="#7A5A28" stopOpacity="0.55" />
-                      <stop offset="100%" stopColor="#15120F" stopOpacity="0.45" />
+                      <stop offset="0%" stopColor="#3A2820" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="#15100C" stopOpacity="0.45" />
                     </linearGradient>
                   </defs>
                   <polygon
                     points={points}
                     fill={`url(#${gradBack})`}
-                    stroke="#7A5A28"
+                    stroke="#3A2820"
                     strokeOpacity="0.7"
                     strokeWidth="0.6"
                     strokeLinejoin="round"
@@ -395,7 +404,7 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                       <stop offset="100%" stopColor={palette[2]} stopOpacity="0.55" />
                     </linearGradient>
                     <radialGradient id={gradInner} cx="35%" cy="30%" r="70%">
-                      <stop offset="0%" stopColor={isCoral ? "#FFE4DC" : "#FFF7EA"} stopOpacity="0.88" />
+                      <stop offset="0%" stopColor={isCoral ? ROSE_GOLD : "#F4E8D8"} stopOpacity="0.88" />
                       <stop offset="60%" stopColor={palette[1]} stopOpacity="0.55" />
                       <stop offset="100%" stopColor={palette[2]} stopOpacity="0.38" />
                     </radialGradient>
