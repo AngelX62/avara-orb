@@ -5,11 +5,11 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Avara — AI Command Assistant for Avitus" },
+      { title: "Avara — Lead Intelligence Assistant for Avitus" },
       {
         name: "description",
         content:
-          "Avara is the AI command assistant inside Avitus — understand your pipeline, prepare the next action, and follow up with clarity.",
+          "Avara is the lead intelligence assistant inside Avitus — qualify leads, prepare the next action, and follow up with clarity.",
       },
     ],
   }),
