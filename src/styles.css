@@ -293,11 +293,11 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 45%,
-      rgba(255, 235, 220, 0.88) 0%,
-      rgba(242, 109, 91, 0.42) 28%,
-      rgba(142, 122, 168, 0.30) 55%,
-      rgba(62, 122, 116, 0.18) 75%,
-      rgba(255, 247, 234, 0) 100%);
+      rgba(244, 232, 216, 0.78) 0%,
+      rgba(242, 109, 91, 0.38) 25%,
+      rgba(110, 82, 99, 0.40) 55%,
+      rgba(92, 74, 62, 0.30) 78%,
+      rgba(244, 232, 216, 0) 100%);
   filter: blur(14px);
   transform: translateZ(0);
   animation: avara-core-pulse 6s ease-in-out infinite;
