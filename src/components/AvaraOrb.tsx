@@ -107,9 +107,17 @@ type Inclusion = {
   color: string;
 };
 
+// Coral accents — used sparingly (~10–15% of presence)
+const CORAL_PRIMARY = "#F26D5B";
+const CORAL_LIGHT = "#FF7A6B";
+const CORAL_DEEP = "#E96A5B";
+// Designated coral accent facets (out of 20)
+const CORAL_FACETS = new Set<number>([4, 13]);
+
 function buildInclusions(radius: number): Inclusion[] {
-  const palette = ["#FFB870", "#C9A7FF", "#78D6C6", "#F4A7B9", "#FFF7EA"];
-  return Array.from({ length: 8 }, (_, i) => {
+  // Reduced champagne dominance; one coral inclusion for inner warmth
+  const palette = [CORAL_PRIMARY, "#3E7A74", "#8E7AA8", "#3E7A74", "#D49A92", "#C9A98A"];
+  return Array.from({ length: 6 }, (_, i) => {
     const r = (s: number) => {
       const v = Math.sin(s * 12.9898 + i * 78.233) * 43758.5453;
       return v - Math.floor(v);
@@ -173,7 +181,12 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
       rotor.style.transform = `rotateX(${tilt}deg) rotateY(${yaw}deg)`;
 
       if (t >= nextBloomAt) {
-        const idx = Math.floor(Math.random() * faces.length);
+        // Bias selection toward coral facets (~3× more likely)
+        const coralArr = Array.from(CORAL_FACETS);
+        const useCoral = Math.random() < 0.55;
+        const idx = useCoral
+          ? coralArr[Math.floor(Math.random() * coralArr.length)]
+          : Math.floor(Math.random() * faces.length);
         blooms.push({ idx, start: t, dur: 1600 });
         nextBloomAt = t + 1800 + Math.random() * 2200;
       }
@@ -308,12 +321,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
               .join(" ");
 
             const cy = f.centroid[1];
-            const palette =
-              cy > 0.4
-                ? ["#FFF7EA", "#FBE6D2", "#D8B76A"]
-                : cy > -0.2
-                ? ["#FFF7EA", "#F4C9B0", "#F4A7B9"]
-                : ["#F4A7B9", "#C9A7FF", "#78D6C6"];
+            const isCoral = CORAL_FACETS.has(i);
+            const palette = isCoral
+              ? [CORAL_LIGHT, CORAL_PRIMARY, CORAL_DEEP]
+              : cy > 0.4
+              ? ["#C9A98A", "#8E7AA8", "#3E7A74"]
+              : cy > -0.2
+              ? ["#C9A98A", "#D49A92", "#6B7A65"]
+              : ["#8E7AA8", "#3E7A74", "#2A2622"];
 
             const gradId = `g-${i}`;
             const gradInner = `gi-${i}`;
@@ -336,9 +351,9 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                     marginTop: -(h + pad * 2) / 2,
                     transform:
                       `${baseTransform} ` +
-                      `translateZ(calc(${radius}px + var(--z-offset, 0px) + var(--bloom, 0) * 8px)) ` +
+                      `translateZ(calc(${radius}px + var(--z-offset, 0px) + var(--bloom, 0) * ${isCoral ? 12 : 8}px)) ` +
                       `rotateZ(var(--rz, 0deg))`,
-                    filter: `brightness(calc(var(--b, 1) + var(--bloom, 0) * 0.55))`,
+                    filter: `brightness(calc(var(--b, 1) + var(--bloom, 0) * ${isCoral ? 0.85 : 0.55}))`,
                   } as React.CSSProperties
                 }
               >
@@ -375,14 +390,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                 >
                   <defs>
                     <linearGradient id={gradId} x1="20%" y1="10%" x2="80%" y2="90%">
-                      <stop offset="0%" stopColor={palette[0]} stopOpacity="0.85" />
-                      <stop offset="55%" stopColor={palette[1]} stopOpacity="0.55" />
-                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.40" />
+                      <stop offset="0%" stopColor={palette[0]} stopOpacity="0.92" />
+                      <stop offset="55%" stopColor={palette[1]} stopOpacity="0.68" />
+                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.55" />
                     </linearGradient>
                     <radialGradient id={gradInner} cx="35%" cy="30%" r="70%">
-                      <stop offset="0%" stopColor="#FFF7EA" stopOpacity="0.95" />
-                      <stop offset="60%" stopColor={palette[1]} stopOpacity="0.50" />
-                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.30" />
+                      <stop offset="0%" stopColor={isCoral ? "#FFE4DC" : "#FFF7EA"} stopOpacity="0.88" />
+                      <stop offset="60%" stopColor={palette[1]} stopOpacity="0.55" />
+                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.38" />
                     </radialGradient>
                   </defs>
                   <polygon
