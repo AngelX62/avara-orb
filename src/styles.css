@@ -225,7 +225,7 @@
   background:
     radial-gradient(circle at 50% 50%,
       rgba(242, 109, 91, 0.18) 0%,
-      rgba(142, 122, 168, 0.10) 40%,
+      rgba(110, 82, 99, 0.10) 40%,
       transparent 70%);
   filter: blur(36px);
   z-index: 0;
