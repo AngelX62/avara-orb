@@ -224,8 +224,8 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(255, 184, 112, 0.25) 0%,
-      rgba(244, 167, 185, 0.12) 40%,
+      rgba(242, 109, 91, 0.18) 0%,
+      rgba(142, 122, 168, 0.10) 40%,
       transparent 70%);
   filter: blur(36px);
   z-index: 0;
