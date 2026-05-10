@@ -334,10 +334,10 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
             const palette = isCoral
               ? [CORAL_LIGHT, CORAL_PRIMARY, CORAL_DEEP]
               : cy > 0.4
-              ? ["#C9A98A", "#8E7AA8", "#3E7A74"]
+              ? [WARM_TAUPE, MUTED_PLUM, GRAPHITE]
               : cy > -0.2
-              ? ["#C9A98A", "#D49A92", "#6B7A65"]
-              : ["#8E7AA8", "#3E7A74", "#2A2622"];
+              ? [CHAMPAGNE, DUSTY_ROSE, SMOKY_BROWN]
+              : [MUTED_PLUM, SMOKY_BROWN, ESPRESSO];
 
             const gradId = `g-${i}`;
             const gradInner = `gi-${i}`;
