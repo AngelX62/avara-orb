@@ -111,12 +111,21 @@ type Inclusion = {
 const CORAL_PRIMARY = "#F26D5B";
 const CORAL_LIGHT = "#FF7A6B";
 const CORAL_DEEP = "#E96A5B";
-// Designated coral accent facets (out of 20)
-const CORAL_FACETS = new Set<number>([4, 13]);
+// Warm boutique palette
+const ESPRESSO = "#2A1F1A";
+const GRAPHITE = "#3A332E";
+const SMOKY_BROWN = "#5C4A3E";
+const WARM_TAUPE = "#8C7867";
+const MUTED_PLUM = "#6E5263";
+const DUSTY_ROSE = "#C9A29A";
+const CHAMPAGNE = "#D9C4A3";
+const ROSE_GOLD = "#E8B89A";
+// Designated coral accent facets (out of 20) — upper-right + side-mid
+const CORAL_FACETS = new Set<number>([3, 14]);
 
 function buildInclusions(radius: number): Inclusion[] {
-  // Reduced champagne dominance; one coral inclusion for inner warmth
-  const palette = [CORAL_PRIMARY, "#3E7A74", "#8E7AA8", "#3E7A74", "#D49A92", "#C9A98A"];
+  // Warm-only inclusions, no teal
+  const palette = [CORAL_PRIMARY, MUTED_PLUM, WARM_TAUPE, ROSE_GOLD, SMOKY_BROWN, DUSTY_ROSE];
   return Array.from({ length: 6 }, (_, i) => {
     const r = (s: number) => {
       const v = Math.sin(s * 12.9898 + i * 78.233) * 43758.5453;
