@@ -390,14 +390,14 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                 >
                   <defs>
                     <linearGradient id={gradId} x1="20%" y1="10%" x2="80%" y2="90%">
-                      <stop offset="0%" stopColor={palette[0]} stopOpacity="0.85" />
-                      <stop offset="55%" stopColor={palette[1]} stopOpacity="0.55" />
-                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.40" />
+                      <stop offset="0%" stopColor={palette[0]} stopOpacity="0.92" />
+                      <stop offset="55%" stopColor={palette[1]} stopOpacity="0.68" />
+                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.55" />
                     </linearGradient>
                     <radialGradient id={gradInner} cx="35%" cy="30%" r="70%">
-                      <stop offset="0%" stopColor="#FFF7EA" stopOpacity="0.95" />
-                      <stop offset="60%" stopColor={palette[1]} stopOpacity="0.50" />
-                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.30" />
+                      <stop offset="0%" stopColor={isCoral ? "#FFE4DC" : "#FFF7EA"} stopOpacity="0.88" />
+                      <stop offset="60%" stopColor={palette[1]} stopOpacity="0.55" />
+                      <stop offset="100%" stopColor={palette[2]} stopOpacity="0.38" />
                     </radialGradient>
                   </defs>
                   <polygon
