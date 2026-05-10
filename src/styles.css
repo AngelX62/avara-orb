@@ -293,10 +293,10 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 45%,
-      rgba(255, 247, 234, 0.95) 0%,
-      rgba(255, 184, 112, 0.55) 28%,
-      rgba(201, 167, 255, 0.30) 55%,
-      rgba(120, 214, 198, 0.18) 75%,
+      rgba(255, 235, 220, 0.88) 0%,
+      rgba(242, 109, 91, 0.42) 28%,
+      rgba(142, 122, 168, 0.30) 55%,
+      rgba(62, 122, 116, 0.18) 75%,
       rgba(255, 247, 234, 0) 100%);
   filter: blur(14px);
   transform: translateZ(0);
