@@ -351,9 +351,9 @@ export function AvaraOrb({ size = 360 }: { size?: number }) {
                     marginTop: -(h + pad * 2) / 2,
                     transform:
                       `${baseTransform} ` +
-                      `translateZ(calc(${radius}px + var(--z-offset, 0px) + var(--bloom, 0) * 8px)) ` +
+                      `translateZ(calc(${radius}px + var(--z-offset, 0px) + var(--bloom, 0) * ${isCoral ? 12 : 8}px)) ` +
                       `rotateZ(var(--rz, 0deg))`,
-                    filter: `brightness(calc(var(--b, 1) + var(--bloom, 0) * 0.55))`,
+                    filter: `brightness(calc(var(--b, 1) + var(--bloom, 0) * ${isCoral ? 0.85 : 0.55}))`,
                   } as React.CSSProperties
                 }
               >
