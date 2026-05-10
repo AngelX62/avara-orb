@@ -150,7 +150,7 @@
   min-height: 100vh;
   width: 100%;
   background:
-    radial-gradient(ellipse at 50% 40%, #F6F0E6 0%, #ECE3D4 60%, #E0D5C2 100%);
+    radial-gradient(ellipse at 50% 40%, #EFE5D4 0%, #E0D2BC 60%, #C9B69C 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
